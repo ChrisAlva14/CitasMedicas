@@ -20,11 +20,6 @@ class Paciente:
         self.siguiente = None
 
     def dui_numerico(self):
-        """Devuelve el DUI sin guion como entero.
-
-        Ejemplo: "04567812-3" -> 45678123. Ese número es el que se usa
-        para calcular el consultorio con la función hash.
-        """
         return int(self.dui.replace("-", ""))
 
     def __str__(self):
