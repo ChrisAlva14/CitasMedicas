@@ -350,7 +350,7 @@ class AplicacionCitas:
                 "¿Cómo funciona el hash?\n"
                 "Se quita el guion del DUI, se convierte a número entero y se calcula "
                 "DUI % 4. Ese resultado es el consultorio. Si ya tiene pacientes, el "
-                "nuevo nodo se enlaza al inicio de esa misma lista."
+                "nuevo nodo se enlaza al final de esa misma lista."
             ),
             bg="#f4f8fb",
             fg=COLOR["suave"],
@@ -749,7 +749,7 @@ class AplicacionCitas:
             lienzo.create_text(
                 29,
                 centro,
-                text=str(box),
+                text=str(box + 1),
                 fill="white",
                 font=(FUENTE, 11, "bold"),
             )
@@ -757,7 +757,7 @@ class AplicacionCitas:
             lienzo.create_text(
                 50,
                 y + 12,
-                text=f"Consultorio {box} · {CONSULTORIOS[box]}",
+                text=CONSULTORIOS[box],
                 anchor="w",
                 fill=COLOR["texto"],
                 font=(FUENTE, 10, "bold"),
@@ -841,7 +841,7 @@ class AplicacionCitas:
 
         for box in range(NUM_CONSULTORIOS):
             cantidad = self.tabla.contar_consultorio(box)
-            texto = f"{box} · {CONSULTORIOS[box]}\n{cantidad} paciente"
+            texto = f"{CONSULTORIOS[box]}\n{cantidad} paciente"
             if cantidad != 1:
                 texto += "s"
             self.vars_consultorio[box].set(texto)
@@ -856,10 +856,10 @@ class AplicacionCitas:
         if len(indices) == 1:
             box = indices[0]
             self.var_fila_larga.set(
-                f"Fila más larga: Consultorio {box} ({CONSULTORIOS[box]}) con {maximo} paciente(s)"
+                f"Fila más larga: {CONSULTORIOS[box]} con {maximo} paciente(s)"
             )
         else:
-            nombres = ", ".join(f"Consultorio {box}" for box in indices)
+            nombres = ", ".join(CONSULTORIOS[box] for box in indices)
             self.var_fila_larga.set(f"Fila más larga: empate entre {nombres} con {maximo}")
 
     def _texto_resumen(self):
@@ -874,7 +874,7 @@ class AplicacionCitas:
         ]
         for box in range(NUM_CONSULTORIOS):
             lineas.append(
-                f"  Consultorio {box} ({CONSULTORIOS[box]}): "
+                f"  {CONSULTORIOS[box]}: "
                 f"{self.tabla.contar_consultorio(box)}"
             )
 
@@ -917,11 +917,11 @@ class AplicacionCitas:
             if len(indices) == 1:
                 box = indices[0]
                 lineas.append(
-                    f"  Consultorio {box} ({CONSULTORIOS[box]}) con {maximo} paciente(s)."
+                    f"  {CONSULTORIOS[box]} con {maximo} paciente(s)."
                 )
             else:
                 nombres = ", ".join(
-                    f"Consultorio {box} ({CONSULTORIOS[box]})" for box in indices
+                    CONSULTORIOS[box] for box in indices
                 )
                 lineas.append(
                     f"  Empate entre {nombres}, con {maximo} paciente(s) cada uno."
@@ -1027,18 +1027,18 @@ class AplicacionCitas:
         lineas = [
             f"Cita registrada: {nombre}",
             f"{numero} % {NUM_CONSULTORIOS} = {paciente.dui_numerico() % NUM_CONSULTORIOS}"
-            f"  →  Consultorio {consultorio} ({CONSULTORIOS[consultorio]})",
+            f"  →  {CONSULTORIOS[consultorio]}",
         ]
         if colision:
-            lineas.append("¡Colisión! Se encadena al inicio de la lista de ese consultorio.")
+            lineas.append("¡Colisión! Se encadena al final de la fila de ese consultorio.")
         else:
-            lineas.append("El consultorio estaba vacío: el paciente es la cabeza de la lista.")
+            lineas.append("El consultorio estaba vacío: el paciente es el primero en la fila.")
 
         self.lbl_resultado.configure(
             text="\n".join(lineas), foreground=COLOR["exito"]
         )
         self.var_estado.set(
-            f"Registrado {paciente.dui} en el Consultorio {consultorio}"
+            f"Registrado {paciente.dui} en el {CONSULTORIOS[consultorio]}"
             + (" (colisión resuelta por encadenamiento)." if colision else ".")
         )
         self.limpiar_formulario(silencioso=True)
@@ -1087,8 +1087,8 @@ class AplicacionCitas:
             self._escribir(
                 self.texto_busqueda,
                 f"No existe una cita con el DUI {dui}.\n\n"
-                f"El hash lo enviaría al Consultorio {consultorio} "
-                f"({CONSULTORIOS[consultorio]}) y esa cadena no lo contiene.",
+                f"El hash lo enviaría al {CONSULTORIOS[consultorio]} "
+                f"y esa cadena no lo contiene.",
             )
             self.var_estado.set(f"Sin resultados para el DUI {dui}.")
             return
@@ -1108,7 +1108,7 @@ class AplicacionCitas:
             f"Motivo:       {paciente.motivo}",
             f"Prioridad:    {paciente.prioridad}",
             "",
-            f"Consultorio:  {consultorio} ({CONSULTORIOS[consultorio]})",
+            f"Consultorio:  {CONSULTORIOS[consultorio]}",
             f"Posición en la fila: {por_delante + 1}",
             f"Personas por delante: {por_delante}",
         ]
@@ -1116,7 +1116,7 @@ class AplicacionCitas:
             detalle.append("Es el próximo paciente en ser atendido.")
         self._escribir(self.texto_busqueda, "\n".join(detalle))
         self.var_estado.set(
-            f"DUI {dui} encontrado en el Consultorio {consultorio}, "
+            f"DUI {dui} encontrado en el {CONSULTORIOS[consultorio]}, "
             f"posición {por_delante + 1}."
         )
 
@@ -1155,7 +1155,7 @@ class AplicacionCitas:
             f"Motivo:       {paciente.motivo}",
             f"Prioridad:    {paciente.prioridad}",
             "",
-            f"Consultorio:  {consultorio} ({CONSULTORIOS[consultorio]})",
+            f"Consultorio:  {CONSULTORIOS[consultorio]}",
             f"Personas por delante: {por_delante}",
             "",
             "Puede cancelarla o marcarla como atendida con el botón rojo.",
@@ -1176,7 +1176,7 @@ class AplicacionCitas:
             "Confirmar",
             f"¿Cancelar o marcar como atendida la cita de:\n\n"
             f"{paciente.nombre}\nDUI {paciente.dui}\n"
-            f"Consultorio {consultorio} ({CONSULTORIOS[consultorio]})\n\n"
+            f"{CONSULTORIOS[consultorio]}\n\n"
             f"El nodo se desenlazará de la cadena.",
             parent=self.raiz,
         )
@@ -1198,10 +1198,10 @@ class AplicacionCitas:
         self._escribir(
             self.texto_gestion,
             f"Cita eliminada.\n\n{eliminado.nombre}\nDUI {eliminado.dui}\n\n"
-            f"La cadena del Consultorio {consultorio} quedó reenlazada.",
+            f"La cadena del {CONSULTORIOS[consultorio]} quedó reenlazada.",
         )
         self.var_estado.set(
-            f"Cita de {eliminado.dui} eliminada del Consultorio {consultorio}."
+            f"Cita de {eliminado.dui} eliminada del {CONSULTORIOS[consultorio]}."
         )
 
     def _escribir(self, widget, texto):
