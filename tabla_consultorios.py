@@ -1,11 +1,3 @@
-"""Tabla hash con hashing abierto (encadenamiento separado).
-
-La tabla tiene un tamaño fijo de 4 consultorios. Cada consultorio guarda
-la cabeza de una lista enlazada con todos los pacientes que caen en él.
-Si hay colisión, el nuevo paciente se agrega a esa misma cadena; nunca
-se mueve a otro consultorio libre.
-"""
-
 NUM_CONSULTORIOS = 4
 
 CONSULTORIOS = [
