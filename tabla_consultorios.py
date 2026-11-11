@@ -1,10 +1,10 @@
 NUM_CONSULTORIOS = 4
 
 CONSULTORIOS = [
-    "Medicina General",          # consultorio 0
-    "Pediatría",                 # consultorio 1
-    "Ginecología y Obstetricia",  # consultorio 2
-    "Medicina Interna",          # consultorio 3
+    "Consultorio 1",
+    "Consultorio 2",
+    "Consultorio 3",
+    "Consultorio 4",
 ]
 
 
@@ -28,25 +28,34 @@ class TablaConsultorios:
     # INSERCIÓN
     # ------------------------------------------------------------------
     def insertar(self, paciente):
-        """Inserta al paciente al inicio de la cadena de su consultorio.
+        """Inserta al paciente al final de la cadena de su consultorio (FIFO).
 
         Devuelve una tupla (número de consultorio, hubo_colisión).
         Lanza ValueError si el DUI ya está registrado.
         """
         box = self.funcion_hash(paciente.dui_numerico())
 
-        # Recorremos SOLO la cadena de ese consultorio para evitar duplicados.
+        # Recorremos la cadena para validar duplicados y ubicar el último nodo.
         actual = self.consultorios[box]
+        ultimo = None
         while actual is not None:
             if actual.dui == paciente.dui:
                 raise ValueError(f"El DUI {paciente.dui} ya tiene una cita registrada.")
+            ultimo = actual
             actual = actual.siguiente
 
         # HASH ABIERTO: si la posición ya tiene pacientes, hay colisión y el
-        # nuevo nodo se encadena en la misma lista. No se busca otro consultorio.
+        # nuevo nodo se encadena al final de la fila. No se busca otro consultorio.
         hubo_colision = self.consultorios[box] is not None
-        paciente.siguiente = self.consultorios[box]   # el anterior queda detrás
-        self.consultorios[box] = paciente             # inserción al inicio, O(1)
+        paciente.siguiente = None
+
+        if ultimo is None:
+            # El consultorio estaba vacío: el paciente es la cabeza de la fila.
+            self.consultorios[box] = paciente
+        else:
+            # Se encadena al final de la fila de espera (orden de llegada).
+            ultimo.siguiente = paciente
+
         self.total_pacientes += 1
 
         return box, hubo_colision
