@@ -46,12 +46,12 @@ Los colores del dibujo ayudan a explicar el hashing abierto:
 La tabla hash es un arreglo de tamaño fijo `m = 4`. Cada posición representa un
 consultorio y guarda la **cabeza de una lista enlazada**:
 
-| Posición | Consultorio |
+| Posición (Índice) | Consultorio en pantalla |
 |---|---|
-| 0 | Medicina General |
-| 1 | Pediatría |
-| 2 | Ginecología y Obstetricia |
-| 3 | Medicina Interna |
+| 0 | Consultorio 1 |
+| 1 | Consultorio 2 |
+| 2 | Consultorio 3 |
+| 3 | Consultorio 4 |
 
 La función hash toma el DUI sin guion como entero y calcula:
 
@@ -59,7 +59,7 @@ La función hash toma el DUI sin guion como entero y calcula:
 consultorio = dui_numerico % 4
 ```
 
-Ejemplo: `04567812-3` → `45678123` → `45678123 % 4 = 3` → Consultorio 3.
+Ejemplo: `04567812-3` → `45678123` → `45678123 % 4 = 3` → Posición 3 (Consultorio 4).
 
 Al convertir el DUI a entero se pierden los ceros a la izquierda, pero el resultado
 del módulo es el mismo. Si un paciente cae en un consultorio que ya tiene pacientes,
@@ -85,25 +85,24 @@ Use la pestaña **Registrar** y escriba estos 8 pacientes en el orden indicado.
 
 | # | DUI sin guion | Operación | Consultorio asignado | ¿Colisión al ingresar? |
 |---|---|---|---|---|
-| 1 | `045678123` | `045678123 % 4 = 3` | 3 - Medicina Interna | No, el consultorio estaba vacío |
-| 2 | `031245607` | `031245607 % 4 = 3` | 3 - Medicina Interna | Sí, se encadena |
-| 3 | `059812345` | `059812345 % 4 = 1` | 1 - Pediatría | No, el consultorio estaba vacío |
-| 4 | `028765410` | `028765410 % 4 = 2` | 2 - Ginecología y Obstetricia | No, el consultorio estaba vacío |
-| 5 | `063456982` | `063456982 % 4 = 2` | 2 - Ginecología y Obstetricia | Sí, se encadena |
-| 6 | `012345689` | `012345689 % 4 = 1` | 1 - Pediatría | Sí, se encadena |
-| 7 | `076543204` | `076543204 % 4 = 0` | 0 - Medicina General | No, el consultorio estaba vacío |
-| 8 | `044128966` | `044128966 % 4 = 2` | 2 - Ginecología y Obstetricia | Sí, se encadena |
+| 1 | `045678123` | `045678123 % 4 = 3` | Consultorio 4 | No, el consultorio estaba vacío |
+| 2 | `031245607` | `031245607 % 4 = 3` | Consultorio 4 | Sí, se encadena al final |
+| 3 | `059812345` | `059812345 % 4 = 1` | Consultorio 2 | No, el consultorio estaba vacío |
+| 4 | `028765410` | `028765410 % 4 = 2` | Consultorio 3 | No, el consultorio estaba vacío |
+| 5 | `063456982` | `063456982 % 4 = 2` | Consultorio 3 | Sí, se encadena al final |
+| 6 | `012345689` | `012345689 % 4 = 1` | Consultorio 2 | Sí, se encadena al final |
+| 7 | `076543204` | `076543204 % 4 = 0` | Consultorio 1 | No, el consultorio estaba vacío |
+| 8 | `044128966` | `044128966 % 4 = 2` | Consultorio 3 | Sí, se encadena al final |
 
 ### Cadenas esperadas al terminar
 
-Como la inserción es al inicio de la lista, el último paciente ingresado en cada
-consultorio aparece primero:
+Como la inserción es al final de la fila (**cola de espera FIFO: primero en llegar, primero en ser atendido**), los pacientes conservan su orden cronológico de llegada. El primer paciente registrado aparece a la cabeza y los posteriores se encadenan detrás:
 
 ```text
-Consultorio 0 (Medicina General): [DUI: 07654320-4] -> NULL
-Consultorio 1 (Pediatría) (COLISIÓN - 2 pacientes): [DUI: 01234568-9] -> [DUI: 05981234-5] -> NULL
-Consultorio 2 (Ginecología y Obstetricia) (COLISIÓN - 3 pacientes): [DUI: 04412896-6] -> [DUI: 06345698-2] -> [DUI: 02876541-0] -> NULL
-Consultorio 3 (Medicina Interna) (COLISIÓN - 2 pacientes): [DUI: 03124560-7] -> [DUI: 04567812-3] -> NULL
+Consultorio 1: [DUI: 07654320-4] -> NULL
+Consultorio 2 (COLISIÓN - 2 pacientes): [DUI: 05981234-5] -> [DUI: 01234568-9] -> NULL
+Consultorio 3 (COLISIÓN - 3 pacientes): [DUI: 02876541-0] -> [DUI: 06345698-2] -> [DUI: 04412896-6] -> NULL
+Consultorio 4 (COLISIÓN - 2 pacientes): [DUI: 04567812-3] -> [DUI: 03124560-7] -> NULL
 ```
 
 ## Cómo registrar el primer paciente
@@ -124,16 +123,16 @@ Debajo de los botones aparecerá:
 
 ```text
 Cita registrada: María José Hernández Flores
-045678123 % 4 = 3  →  Consultorio 3 (Medicina Interna)
-El consultorio estaba vacío: el paciente es la cabeza de la lista.
+045678123 % 4 = 3  →  Consultorio 4
+El consultorio estaba vacío: el paciente es el primero en la fila.
 ```
 
-El nodo se dibuja resaltado en amarillo al inicio de la fila del Consultorio 3.
+El nodo se dibuja resaltado en amarillo en la fila del Consultorio 4.
 Repita el proceso con los otros 7 pacientes. Si el consultorio ya tenía pacientes,
 el mensaje será:
 
 ```text
-¡Colisión! Se encadena al inicio de la lista de ese consultorio.
+¡Colisión! Se encadena al final de la fila de ese consultorio.
 ```
 
 También puede presionar **Enter** dentro de un campo para registrar la cita.
@@ -141,36 +140,40 @@ También puede presionar **Enter** dentro de un campo para registrar la cita.
 ## Recorrido sugerido para la exposición
 
 1. Abra la aplicación. Las cuatro filas muestran `NULL`: la tabla está vacía.
-2. Registre al paciente **1**. Como el Consultorio 3 está vacío, será la cabeza y su
-   nodo aparecerá en amarillo.
-3. Registre al paciente **2**. También cae en el Consultorio 3: hay colisión y la
-   cadena queda `[03124560-7] -> [04567812-3]`. Aunque los consultorios 0, 1 y 2
-   estén libres, el paciente **no se mueve**: eso demuestra el hashing abierto.
-4. Registre los pacientes **3 al 8** y observe cómo cada uno se encadena en su
+2. Registre al paciente **1**. Como el Consultorio 4 está vacío, es el primero en la fila
+   y su nodo aparecerá en amarillo.
+3. Registre al paciente **2**. También cae en el Consultorio 4: hay colisión y la
+   cadena queda `[04567812-3] -> [03124560-7] -> NULL` (cola de espera FIFO).
+   Aunque los consultorios 1, 2 y 3 estén libres, el paciente **no se mueve**: eso
+   demuestra el hashing abierto.
+4. Registre los pacientes **3 al 8** y observe cómo cada uno se encadena al final de su
    consultorio.
 5. En la pestaña **Consultar**, busque el DUI `04567812-3`: el nodo se marca en verde,
-   aparece en el Consultorio 3, posición 2, con 1 persona por delante. El DUI
-   `03124560-7` está en la posición 1, con 0 personas por delante.
-6. En **Cancelar / Atender**, busque el DUI `03124560-7` (cabeza del Consultorio 3),
-   confirme y vea cómo la cadena queda `[04567812-3] -> NULL`.
-7. Elimine el DUI `06345698-2`, que está en medio de la cadena del Consultorio 2. La
-   cadena debe quedar `[04412896-6] -> [02876541-0] -> NULL`.
+   aparece en el Consultorio 4, posición 1, con 0 personas por delante (es el próximo
+   en ser atendido). El DUI `03124560-7` está en la posición 2, con 1 persona por delante.
+6. En **Cancelar / Atender**, busque el DUI `04567812-3` (primero en la fila del
+   Consultorio 4), confirme y vea cómo la cadena queda `[03124560-7] -> NULL`,
+   promoviendo a Carlos Alberto al primer lugar.
+7. Elimine el DUI `06345698-2`, que está en medio de la cadena del Consultorio 3
+   (`[02876541-0] -> [06345698-2] -> [04412896-6]`). La cadena debe quedar
+   `[02876541-0] -> [04412896-6] -> NULL`.
 8. Intente registrar otra vez un DUI que ya exista: el sistema lo rechaza.
 9. Observe que el motivo no decide el consultorio: Rosa Elena tiene "Control de
-   diabetes" y cae en Medicina General (0); Luis Fernando tiene "Dolor abdominal" y
-   cae en Pediatría (1). Lo decide únicamente `DUI % 4`.
+   diabetes" y cae en Consultorio 1; Luis Fernando tiene "Dolor abdominal" y
+   cae en Consultorio 2. Lo decide únicamente `DUI % 4`.
 10. Abra **Resumen detallado** para mostrar los totales por consultorio y por
     departamento.
 
 ## Operaciones
 
-- **Insertar:** se calcula el consultorio y el nodo se enlaza al inicio de la lista
-  (`nuevo.siguiente = cabeza; cabeza = nuevo`). Es O(1), sin contar la verificación
-  de DUI duplicado.
+- **Insertar:** se calcula el consultorio correspondiente (`DUI % 4`). Si ya hay pacientes
+  en el consultorio (colisión), el nuevo nodo se enlaza **al final de la lista**
+  (comportamiento de cola de espera FIFO: primero en llegar, primero en ser atendido),
+  preservando el orden de llegada para los turnos médicos.
 - **Buscar:** se calcula el consultorio y se recorre solo esa lista con un puntero
   temporal. Devuelve al paciente, su consultorio y cuántas personas tiene por delante.
-- **Eliminar:** se localiza el nodo con un puntero `previo`. Si es la cabeza, se
-  actualiza la cabeza de la lista; si está en medio, se hace
+- **Eliminar:** se localiza el nodo con un puntero `previo`. Si es la cabeza de la fila, se
+  actualiza la cabeza de la lista; si está en medio o al final, se hace
   `previo.siguiente = actual.siguiente`. Así se desenlaza el nodo y la cadena se
   reconecta.
 - **Dibujar:** recorre las 4 cadenas y dibuja cada nodo con flechas hasta `NULL`.
